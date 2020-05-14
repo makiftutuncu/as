@@ -8,7 +8,7 @@ organizationHomepage in ThisBuild := Some(url("https://akif.dev"))
 developers           in ThisBuild := List(Developer("makiftutuncu", "Mehmet Akif Tütüncü", "m.akif.tutuncu@gmail.com", url("https://akif.dev")))
 scmInfo              in ThisBuild := Some(ScmInfo(url("https://github.com/makiftutuncu/as"), "https://github.com/as/as.git"))
 
-version       := "0.1.0"
+version       := "0.1.0-SNAPSHOT"
 scalaVersion  := "2.13.2"
 javacOptions ++= Seq("-source", "11")
 
