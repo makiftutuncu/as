@@ -17,9 +17,8 @@ case class Book(id: Long, authorId: Long, name: String)
 To overcome this, we can have separate **refined** types. Here is how we can create one.
 
 ```scala
-import dev.akif.As
-
 // AuthorId.scala
+import dev.akif.As
 
 sealed abstract case class AuthorId private(get: Long)
 
@@ -42,9 +41,8 @@ Things to note here
 Let's create other types too.
 
 ```scala
-import dev.akif.As
-
 // AuthorName.scala
+import dev.akif.As
 
 sealed abstract case class AuthorName private(get: String)
 
@@ -54,6 +52,7 @@ object AuthorName extends (String As AuthorName)("", new AuthorName(_) {}, {
 })
 
 // BookId.scala
+import dev.akif.As
 
 sealed abstract case class BookId private(get: Long)
 
@@ -62,6 +61,7 @@ object BookId extends (Long As BookId)(0L, new BookId(_) {}, {
 })
 
 // BookName.scala
+import dev.akif.As
 
 sealed abstract case class BookName private(get: String)
 
@@ -79,7 +79,7 @@ case class Author(id: AuthorId, name: AuthorName)
 case class Book(id: BookId, authorId: AuthorId, name: BookName)
 ```
 
-Now our types are fine-tuned so that they will have correct values and we are forced to check everything at compile time.
+Now our types are fine-tuned so that they will have correct values and we are forced to check everything at compile time. Applying an `A` to an `A As B` returns an `Either[E, B]`. In other words, object construction can fail and this is reflected to types. Since we have `Either`s, it's easy to combine them.
 
 ```scala
 import dev.akif.As
@@ -90,12 +90,6 @@ val authorId1 = AuthorId(-1L)
 
 // Right(AuthorId(1))
 val authorId2 = AuthorId(1L)
-```
-
-Applying an `A` to an `A As B` returns an `Either[E, B]`. In other words, object construction can fail and this is reflected to types. Since we have `Either`s, it's easy to combine them.
-
-```scala
-import e.scala.E
 
 // Right(Author(AuthorId(1)))
 val maybeAuthor: Either[E, Author] =
