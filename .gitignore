@@ -1,2 +1,9 @@
-*.class
-*.log
+.classpath
+.project
+target
+.idea
+.idea_modules
+logs
+.metals
+.bloop
+metals.sbt
