@@ -104,10 +104,10 @@ val maybeAuthor: Either[E, Author] =
 If using the default value in case of an invalid one is OK, we can do following to get an instance directly, ignoring the error.
 
 ```scala
-// Book(BookId(0),AuthorId(1),BookName(Type Refinement in Scala))
+// Book(BookId(0),AuthorId(0),BookName(Type Refinement in Scala))
 val book: Book = Book(
-  BookId.getOrEmpty(-1),
-  AuthorId.getOrEmpty(1L),
+  BookId.empty,
+  AuthorId.getOrEmpty(-1L),
   BookName.getOrEmpty("Type Refinement in Scala")
 )
 ```
