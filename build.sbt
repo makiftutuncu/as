@@ -1,17 +1,29 @@
-description          in ThisBuild := "As"
-homepage             in ThisBuild := Some(url("https://akif.dev"))
-startYear            in ThisBuild := Some(2020)
-licenses             in ThisBuild := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
-organization         in ThisBuild := "dev.akif"
-organizationName     in ThisBuild := "Mehmet Akif Tütüncü"
-organizationHomepage in ThisBuild := Some(url("https://akif.dev"))
-developers           in ThisBuild := List(Developer("makiftutuncu", "Mehmet Akif Tütüncü", "m.akif.tutuncu@gmail.com", url("https://akif.dev")))
-scmInfo              in ThisBuild := Some(ScmInfo(url("https://github.com/makiftutuncu/as"), "https://github.com/as/as.git"))
+// === Build Settings ===
+val developer = Developer("makiftutuncu", "Mehmet Akif Tütüncü", "m.akif.tutuncu@gmail.com", url("https://akif.dev"))
+val copyrightYear = 2021
+val developerGithub = s"https://github.com/${developer.id}"
 
-version       := "1.0.0"
-scalaVersion  := "2.13.2"
-javacOptions ++= Seq("-source", "11")
+organization         := "dev.akif"
+name                 := "as"
+description          := s"${name.value}: No-macro, no-reflection, opinionated type refinement for Scala, powered by e"
+scmInfo              := Some(ScmInfo(url(s"$developerGithub/${name.value}"), s"$developerGithub/${name.value}.git"))
+homepage             := Some(developer.url)
+startYear            := Some(copyrightYear)
+licenses             := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
+organizationName     := developer.name
+organizationHomepage := Some(developer.url)
+developers           := List(developer)
 
-libraryDependencies ++= Seq(
-  "dev.akif" %% "e-scala" % "2.0.0"
-)
+// === Project Settings ===
+val scala2 = "2.13.5"
+val scala3 = "3.0.0"
+
+version             := "2.0.0"
+scalaVersion        := scala3
+crossScalaVersions  := Seq(scala2, scala3)
+
+// === Project Dependencies ===
+val e     = ("dev.akif" %% "e-scala" % "2.0.0").cross(CrossVersion.for3Use2_13)
+val munit = "org.scalameta" %% "munit" % "0.7.26" % Test
+
+libraryDependencies ++= Seq(e, munit)
