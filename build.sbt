@@ -16,7 +16,6 @@ organizationHomepage := Some(developer.url)
 developers := List(developer)
 
 // === Project Settings ===
-version := "1.0.0-SNAPSHOT"
 scalaVersion := "3.4.1"
 javacOptions ++= Seq("-source", "21")
 
@@ -25,3 +24,46 @@ val e = "dev.akif" %% "e-scala" % "3.0.0"
 val munit = "org.scalameta" %% "munit" % "1.0.0-RC1" % Test
 
 libraryDependencies ++= Seq(e, munit)
+
+// === Release Settings ===
+
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations.*
+
+Compile / packageBin / publishArtifact := true
+Compile / packageSrc / publishArtifact := true
+Compile / packageDoc / publishArtifact := true
+
+val sonatypeUser = sys.env.getOrElse("SONATYPE_USER", "")
+val sonatypePass = sys.env.getOrElse("SONATYPE_PASS", "")
+
+ThisBuild / credentials += Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", sonatypeUser, sonatypePass)
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishMavenStyle := true
+ThisBuild / publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+
+val checkPublishCredentials = ReleaseStep { state =>
+    if (sonatypeUser.isEmpty || sonatypePass.isEmpty) {
+        throw new Exception(
+            "Sonatype credentials are missing! Make sure to provide SONATYPE_USER and SONATYPE_PASS environment variables."
+        )
+    }
+
+    state
+}
+
+usePgpKeyHex("3D5A9AE9F71508A0D85E78DF877A4F41752BB3B5")
+
+releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    checkPublishCredentials,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    publishArtifacts,
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+)

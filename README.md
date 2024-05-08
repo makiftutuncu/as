@@ -1,145 +1,196 @@
-# As
+# as [![](https://img.shields.io/badge/scaladoc-1.0.0-brightgreen.svg?style=for-the-badge&logo=scala&color=dc322f&labelColor=333333)](https://javadoc.io/doc/dev.akif/as_3)
 
-As is a no-macro, no-reflection, opinionated type refinement library for Scala. It is powered by [e](https://github.com/makiftutuncu/e) to handle invalid value errors.
+as is a no-macro, no-reflection, opinionated type refinement library for Scala 3. It is powered by [e](https://github.com/makiftutuncu/e) to handle invalid value errors.
+
+| Latest Version | Java Version | Scala Version |
+|----------------|--------------|---------------|
+| 1.0.0          | 21           | 3.4.1         |
+
+## Table of Contents
+
+1. [Installation](#installation)
+2. [How to Use](#how-to-use)
+3. [Development and Testing](#development-and-testing)
+4. [Releases](#releases)
+5. [Contributing](#contributing)
+6. [License](#license)
 
 ## Installation
-As is not published anywhere yet. So, feel free to include `As.scala` in your code and you're good to go.
+If you use SBT, add following to your `build.sbt`:
 
-## Overview
+```scala 3
+libraryDependencies += "dev.akif" %% "as" % "1.0.0"
+```
+
+If you use Maven, add following to your `pom.xml`:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>dev.akif</groupId>
+        <artifactId>as_3</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+</dependencies>
+```
+
+If you use Gradle, add following to your project's `build.gradle`:
+
+```javascript
+dependencies
+{
+    implementation('dev.akif:as_3:1.0.0')
+}
+```
+
+## How to Use
 
 Assume we have following `Author` and `Book` types.
 
-```scala
+```scala 3
 case class Author(id: Long, name: String)
 
 case class Book(id: Long, authorId: Long, name: String)
 ```
 
-`Long` and `String` are primitives and may not contain valid values for ids or names. Even if implement types for id and name to guard against invalid values, author's id is different than a book's id and they should not be of same type.
+`Long` and `String` are primitives and may not contain valid values for ids or names. Even if you implement ids and names with their own types to guard against invalid values, author's id is different from a book's id, and they should not be of same type.
 
 To overcome this, we can have separate **refined** types.
 
-Here is how we can create one, refining `Long` as `AuthorId`:
+Here is how you can create one, refining `Long` as `AuthorId`:
 
-1. Make a `sealed abstract case class`
-2. Extend `Refined` with type of underlying value (`Long` in this case)
-3. Mark the constructor as private
-4. Create a companion object extending `UnderlyingType As RefinedType` (`Long As AuthorId` in this case)
-5. Fill out the parameters and implement validation
+1. Make an `opaque type` alias `AuthorId = Long` in a separate file
+   1. Optionally add a subtype constraint `<: Long` if you want to be able to make `AuthorId` type a subtype of `Long` (in other words, to be able to assign an `AuthorId` value to a `Long` reference)
+2. Create a companion object extending `UnderlyingType as RefinedType` (`Long as AuthorId` in this case)
+3. Implement `undefinedValue` and `validation` members
 
-```scala
+```scala 3
 // AuthorId.scala
-sealed abstract case class AuthorId private(override val get: Long) extends Refined[Long]
+import dev.akif.as.*
 
-object AuthorId extends (Long As AuthorId)(emptyValue = 0L, construct = new AuthorId(_) {}) {
-   override val validate: PartialFunction[Long, String] = {
-      case v if v <= 0 => "Id must be positive!"
-   }
-}
+opaque type AuthorId <: Long = Long
+
+// Parenthesis are required because `as` is used as an infix type, which would otherwise be `as[Long, AuthorId]`
+object AuthorId extends (Long as AuthorId):
+    override val undefinedValue: Long = 0L
+   
+    override val validation: Validation[Long] =
+        Validation.min(lowerLimit = 0, inclusive = false)
 ```
 
-Things to note here:
-
-1. Even though `AuthorId` type is a case class (having `equals`, `hashCode`, `toString`, `apply`, `unapply` methods generated)
-   1. it is marked `sealed abstract` so it does not have generated `copy` method so a valid instance cannot be copied with an invalid value.
-   2. its constructor is private, meaning that there is no way of creating a new concrete instance of this class outside the file it is defined.
-   3. underlying value is called `get` (coming from `Refined`) so it makes sense semantically while accessing the value.
-2. Companion object extends abstract class `Long As AuthorId` (which is a syntactic sugar for `As[Long, AuthorId]`) passing some values to its constructor, see [As.scala](src/main/scala/dev/akif/As.scala).
-   1. First value is the empty value of this type (`0L` for the case of `Long`)
-   2. Second value is a constructor lambda. Since concrete object creation is forbidden as explained above, we provide a way to create an anonymous instance.
-3. Validate value is a partial function from the value to a `String` error message in case the value is invalid.
+This incurs no additional allocation because `AuthorId` is defined as an `opaque type` alias. Within `AuthorId.scala` file, it can be treated as a `Long`. However, in any other file, `AuthorId` and `Long` are completely different types.
 
 Let's create other types too.
 
-```scala
+```scala 3
 // AuthorName.scala
-sealed abstract case class AuthorName private(override val get: String) extends Refined[String]
+import dev.akif.as.*
 
-object AuthorName extends (String As AuthorName)(emptyValue = "", construct = new AuthorName(_) {}) {
-   override val validate: PartialFunction[String, String] = {
-      case s if s.isBlank          => "Name must not be blank!"
-      case s if s.trim.length > 64 => "Name must have less than 64 characters!"
-   }
-}
+opaque type AuthorName <: String = String
+
+object AuthorName extends (String as AuthorName):
+    override val undefinedValue: String = ""
+
+    override val validation: Validation[String] =
+       Validation.all(
+          Validation.make(predicate = !_.isBlank, failureMessage = _ => "Value is blank"),
+          Validation.make(predicate = _.length <= 64, failureMessage = _ => "Value has more than 64 characters")
+       )
 
 // BookId.scala
-sealed abstract case class BookId private(override val get: Long) extends Refined[Long]
+import dev.akif.as.*
 
-object BookId extends (Long As BookId)(emptyValue = 0L, construct = new BookId(_) {}) {
-   override val validate: PartialFunction[Long, String] = {
-      case v if v <= 0 => "Id must be positive!"
-   }
-}
+opaque type BookId <: Long = Long
+
+object BookId extends (Long as BookId):
+    override val undefinedValue: Long = 0L
+   
+    override val validation: Validation[Long] =
+        Validation.min(lowerLimit = 0, inclusive = false)
 
 // BookName.scala
-sealed abstract case class BookName private(override val get: String) extends Refined[String]
+import dev.akif.as.*
 
-object BookName extends (String As BookName)(emptyValue = "", construct = new BookName(_) {}) {
-   override val validate: PartialFunction[String, String] = {
-      case s if s.isBlank          => "Name must not be blank!"
-      case s if s.trim.length > 64 => "Name must have less than 64 characters!"
-   }
-}
+opaque type AuthorName <: String = String
+
+object AuthorName extends (String as AuthorName):
+    override val undefinedValue: String = ""
+
+    override val validation: Validation[String] =
+        Validation.all(
+            Validation.make(predicate = !_.isBlank, failureMessage = _ => "Value is blank"),
+            Validation.make(predicate = _.length <= 64, failureMessage = _ => "Value has more than 64 characters")
+        )
 ```
 
 Now let's change the original example.
 
-```scala
-case class Author(id: AuthorId, name: AuthorName)
+```scala 3
+case class Book(id: AuthorId, name: AuthorName)
 
 case class Book(id: BookId, authorId: AuthorId, name: BookName)
 ```
 
-Now our types are fine-tuned so that they will have correct values and we are forced to check everything at compile time. We need to use `make` or `apply` methods to create a refined value. `make` is straightforward. However, because of how `apply` is defined, creating a refined type by applying an `A` to an `A As B` returns an `EOr[B]`. In other words, object construction can fail and this is reflected to types. Since we have `EOr`s in the construction, it's easy to combine them, even in for comprehensions.
+Now our types are fine-tuned so that they will have correct values, and we are forced to check everything at compile time. We need to use `apply` method, `as` extension method or their variants to create a refined value. Creating a refined type by applying an `A` to an `A as B` returns an `E or B`. In other words, object construction can fail and this is reflected to types. Since we have `or`s in the construction, it's easy to combine them, even in for comprehensions.
 
-```scala
-import e.scala.EOr
+```scala 3
+import dev.akif.as.*
+import e.scala.*
 
-// Failure({"name":"validation","message":"Id must be positive!","data":{"value":"-1"}})
-val authorId1 = AuthorId(-1L)
+// Failure({"name":"invalid-data","causes":[{"message":"Value is less than or equal to 0"}],"data":{"type":"AuthorId","value":"-1"}})
+val authorId1: E or AuthorId = AuthorId(-1L)
 
-// Success(AuthorId(1))
-val authorId2 = AuthorId.make(1L)
+// Success(1)
+val authorId2: E or AuthorId = AuthorId(1L)
 
-// Success(Author(AuthorId(1)))
-val maybeAuthor: EOr[Author] =
-  for {
-    id   <- AuthorId(1L)
-    name <- AuthorName("Mehmet Akif Tütüncü")
-  } yield {
-    Author(id, name)
-  }
+// Can also be written with the extension method
+// val authorId2: E or AuthorId = 1L.as[AuthorId]
+
+// Success(Author(1, Mehmet Akif Tütüncü))
+val maybeAuthor: E or Author =
+    for
+       id   <- AuthorId(1L)
+       name <- AuthorName("Mehmet Akif Tütüncü")
+    yield
+        Author(id, name)
 ```
 
-In cases where you need an unwrapped value, you can use `makeOrEmpty` or `makeUnsafe` methods.
+In cases where you need to have the refined `AuthorId` directly instead of `E or AuthorId`, you can use:
 
-`makeOrEmpty` method will return you the empty value if validation fails.
+* `AuthorId.applyOrUndefined(-1L)` (or `-1L.asOrUndefined[AuthorId]`) method that will return you the undefined value when validation fails
+* `AuthorId.unsafe(-1L)` (or `-1L.asUnsafe[AuthorId]`) method that will throw the validation error as an exception, hence the name unsafe
 
-`makeUnsafe` method will throw the validation error as an exception, hence the name unsafe.
-
-```scala
-// Book(BookId(0),AuthorId(0),BookName(Type Refinement in Scala))
+```scala 3
+// Book(0, 0, Type Refinement in Scala)
 val book: Book = Book(
-  BookId.empty,
-  AuthorId.makeOrEmpty(-1L),
-  BookName.makeUnsafe("Type Refinement in Scala")
+    BookId.undefined,
+    AuthorId.applyOrEmpty(-1L),
+    BookName.unsafe("Type Refinement in Scala")
 )
 ```
 
-Accessing values is trivial, we are accessing the underlying value we defined in the case class constructor, conveniently named `get`.
+Accessing the unrefined value is possible via the conveniently named extension method `value`. If defined as a subtype, one can also directly assign a refined value to a reference of the unrefined type.
 
 ```scala
 // 0L
-val bookId: Long = book.id.get
+val bookId: Long = book.id.value
 
 // "Type Refinement in Scala"
-val bookName: String = book.name.get
+val bookName: String = book.name // since BookName alias is defined as a subtype of String
 ```
+
+## Development and Testing
+
+as is built with SBT. You can use `clean`, `compile`, `test` tasks for development and testing.
+
+## Releases
+
+as packages are published to Maven Central, and they are versioned according to [semantic versioning](https://semver.org). Release process is managed by [sbt-release](https://github.com/sbt/sbt-release).
 
 ## Contributing
 
-All contributions are more than welcome. Please feel free to send a pull request for your contributions. Thank you.
+All contributions are welcome, including requests to feature your project utilizing as. Please feel free to send a pull request. Thank you.
 
 ## License
 
-As is licensed with MIT License. See [LICENSE.md](LICENSE.md) for details.
+as is licensed with [MIT License](LICENSE.md).
