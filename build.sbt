@@ -18,6 +18,7 @@ developers := List(developer)
 // === Project Settings ===
 scalaVersion := "3.4.1"
 javacOptions ++= Seq("-source", "21")
+ThisBuild / versionScheme := Some("semver-spec")
 
 // === Project Dependencies ===
 val e = "dev.akif" %% "e-scala" % "3.0.0"
@@ -27,6 +28,7 @@ libraryDependencies ++= Seq(e, munit)
 
 // === Release Settings ===
 
+import com.jsuereth.sbtpgp.PgpKeys.publishSigned
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations.*
 
 Compile / doc / scalacOptions ++= Seq("-snippet-compiler:compile")
@@ -37,14 +39,24 @@ Compile / packageDoc / publishArtifact := true
 Test / packageBin / publishArtifact := false
 Test / packageSrc / publishArtifact := false
 Test / packageDoc / publishArtifact := false
+releasePublishArtifactsAction := publishSigned.value
 
 val sonatypeUser = sys.env.getOrElse("SONATYPE_USER", "")
 val sonatypePass = sys.env.getOrElse("SONATYPE_PASS", "")
 
-ThisBuild / credentials += Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", sonatypeUser, sonatypePass)
+ThisBuild / credentials ++= Seq(
+    Credentials(
+        "Sonatype Nexus Repository Manager",
+        "oss.sonatype.org",
+        sonatypeUser,
+        sonatypePass
+    )
+)
 ThisBuild / pomIncludeRepository := { _ => false }
 ThisBuild / publishMavenStyle := true
 ThisBuild / publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+
+usePgpKeyHex("3D5A9AE9F71508A0D85E78DF877A4F41752BB3B5")
 
 val checkPublishCredentials = ReleaseStep { state =>
     if (sonatypeUser.isEmpty || sonatypePass.isEmpty) {
@@ -55,8 +67,6 @@ val checkPublishCredentials = ReleaseStep { state =>
 
     state
 }
-
-usePgpKeyHex("3D5A9AE9F71508A0D85E78DF877A4F41752BB3B5")
 
 releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
