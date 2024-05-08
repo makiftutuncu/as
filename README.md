@@ -75,7 +75,7 @@ object AuthorId extends (Long as AuthorId):
     override val undefinedValue: Long = 0L
    
     override val validation: Validation[Long] =
-        Validation.min(lowerLimit = 0, inclusive = false)
+        Validation.min(lowerLimit = 0L, inclusive = false)
 ```
 
 This incurs no additional allocation because `AuthorId` is defined as an `opaque type` alias. Within `AuthorId.scala` file, it can be treated as a `Long`. However, in any other file, `AuthorId` and `Long` are completely different types.
@@ -106,7 +106,7 @@ object BookId extends (Long as BookId):
     override val undefinedValue: Long = 0L
    
     override val validation: Validation[Long] =
-        Validation.min(lowerLimit = 0, inclusive = false)
+        Validation.min(lowerLimit = 0L, inclusive = false)
 
 // BookName.scala
 import dev.akif.as.*
