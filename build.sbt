@@ -6,7 +6,7 @@ val developerGithub = s"https://github.com/${developer.id}"
 
 organization := "dev.akif"
 name := "as"
-description := s"${name.value}: No-macro, no-reflection, opinionated type refinement for Scala, powered by e"
+description := "as is a no-macro, no-reflection, opinionated type refinement library for Scala 3"
 scmInfo := Some(ScmInfo(url(s"$developerGithub/${name.value}"), s"$developerGithub/${name.value}.git"))
 homepage := Some(developer.url)
 startYear := Some(copyrightYear)
@@ -29,9 +29,14 @@ libraryDependencies ++= Seq(e, munit)
 
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations.*
 
+Compile / doc / scalacOptions ++= Seq("-snippet-compiler:compile")
+
 Compile / packageBin / publishArtifact := true
 Compile / packageSrc / publishArtifact := true
 Compile / packageDoc / publishArtifact := true
+Test / packageBin / publishArtifact := false
+Test / packageSrc / publishArtifact := false
+Test / packageDoc / publishArtifact := false
 
 val sonatypeUser = sys.env.getOrElse("SONATYPE_USER", "")
 val sonatypePass = sys.env.getOrElse("SONATYPE_PASS", "")

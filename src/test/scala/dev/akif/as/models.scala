@@ -2,7 +2,7 @@ package dev.akif.as
 
 import Validation.*
 
-private val positive: Validation[Long] = min(lowerLimit = 0, inclusive = false)
+private val positive: Validation[Long] = min(lowerLimit = 0L, inclusive = false)
 
 private val nonBlank: Validation[String] = make(!_.isBlank, _ => "Value is blank")
 
@@ -12,7 +12,7 @@ object AuthorId extends (Long as AuthorId):
     override val undefinedValue: Long = 0L
 
     override val validation: Validation[Long] =
-        positive and max(upperLimit = 100, inclusive = false)
+        positive and max(upperLimit = 100L, inclusive = false)
 
 opaque type AuthorName <: String = String
 
