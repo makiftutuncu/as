@@ -21,7 +21,7 @@ javacOptions ++= Seq("-source", "21")
 ThisBuild / versionScheme := Some("semver-spec")
 
 // === Project Dependencies ===
-val e = "dev.akif" %% "e-scala" % "3.0.0"
+val e = "dev.akif" %% "e-scala" % "3.0.1"
 val munit = "org.scalameta" %% "munit" % "1.0.0" % Test
 
 libraryDependencies ++= Seq(e, munit)
