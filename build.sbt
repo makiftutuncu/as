@@ -1,7 +1,6 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val developer = Developer("makiftutuncu", "Mehmet Akif Tütüncü", "m.akif.tutuncu@gmail.com", url("https://akif.dev"))
-val copyrightYear = 2020
 val developerGithub = s"https://github.com/${developer.id}"
 
 organization := "dev.akif"
@@ -9,7 +8,7 @@ name := "as"
 description := "as is a no-macro, no-reflection, opinionated type refinement library for Scala 3"
 scmInfo := Some(ScmInfo(url(s"$developerGithub/${name.value}"), s"$developerGithub/${name.value}.git"))
 homepage := Some(developer.url)
-startYear := Some(copyrightYear)
+startYear := Some(2020)
 licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"))
 organizationName := developer.name
 organizationHomepage := Some(developer.url)
@@ -21,7 +20,7 @@ javacOptions ++= Seq("-source", "21")
 ThisBuild / versionScheme := Some("semver-spec")
 
 // === Project Dependencies ===
-val e = "dev.akif" %% "e-scala" % "3.0.0"
+val e = "dev.akif" %% "e-scala" % "3.0.1"
 val munit = "org.scalameta" %% "munit" % "1.0.0" % Test
 
 libraryDependencies ++= Seq(e, munit)

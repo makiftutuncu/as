@@ -1,10 +1,10 @@
-# as [![](https://img.shields.io/badge/scaladoc-1.0.0-brightgreen.svg?style=for-the-badge&logo=scala&color=dc322f&labelColor=333333)](https://javadoc.io/doc/dev.akif/as_3)
+# as [![](https://img.shields.io/badge/scaladoc-1.0.1-brightgreen.svg?style=for-the-badge&logo=scala&color=dc322f&labelColor=333333)](https://javadoc.io/doc/dev.akif/as_3)
 
 as is a no-macro, no-reflection, opinionated type refinement library for Scala 3. It is powered by [e](https://github.com/makiftutuncu/e) to handle invalid value errors.
 
 | Latest Version | Java Version | Scala Version |
 |----------------|--------------|---------------|
-| 1.0.0          | 21           | 3.4.1         |
+| 1.0.1          | 21           | 3.4.2         |
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ as is a no-macro, no-reflection, opinionated type refinement library for Scala 3
 If you use SBT, add following to your `build.sbt`:
 
 ```scala 3
-libraryDependencies += "dev.akif" %% "as" % "1.0.0"
+libraryDependencies += "dev.akif" %% "as" % "1.0.1"
 ```
 
 If you use Maven, add following to your `pom.xml`:
@@ -29,7 +29,7 @@ If you use Maven, add following to your `pom.xml`:
     <dependency>
         <groupId>dev.akif</groupId>
         <artifactId>as_3</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
 </dependencies>
 ```
@@ -39,7 +39,7 @@ If you use Gradle, add following to your project's `build.gradle`:
 ```javascript
 dependencies
 {
-    implementation('dev.akif:as_3:1.0.0')
+    implementation('dev.akif:as_3:1.0.1')
 }
 ```
 
