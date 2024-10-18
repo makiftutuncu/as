@@ -15,7 +15,7 @@ organizationHomepage := Some(developer.url)
 developers := List(developer)
 
 // === Project Settings ===
-scalaVersion := "3.4.2"
+scalaVersion := "3.6.0"
 javacOptions ++= Seq("-source", "21")
 ThisBuild / versionScheme := Some("semver-spec")
 
